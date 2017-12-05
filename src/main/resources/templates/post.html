@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head th:replace="../elements/header :: header(post)"></head>
+<body>
+	<nav th:replace="../elements/navbar" />
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-12">
+				<h1>
+					Postdetails <small> View and edit your post</small>
+				</h1>
+			</div>
+		</div>
+		<hr></hr>
+		<div class="row">
+			<div class="col-sm-12">
+				<form class="form-horizontal" method="post">
+
+					<div class="form-group" th:if="${!(mode == 'add')}">
+						<fieldset th:disabled="${!(mode =='add')}">
+							<label class="control-label col-sm-2" for="group-mapping">Group
+								Mapping:</label>
+							<div class="col-sm-10">
+								<span class="form-control"> <a
+									th:href="@{'/groups/view/' + ${post.group.id}}"
+									th:text="${post.group.name}"></a></span>
+							</div>
+						</fieldset>
+					</div>
+
+					<div class="form-group" th:if="${mode=='add'} and ${groups}">
+						<fieldset>
+							<label class="control-label col-sm-2">Group Mapping:</label>
+							<div class="col-sm-10">
+
+								<input type="text" class="form-control" list="tweetGroups"
+									id="group" name="group" required="required"
+									placeholder="Enter new group name or select from dropdown">
+								</input>
+								<datalist id="tweetGroups">
+									<option th:each="group : ${groups}" th:label="${group.name}"
+										th:value="${group.id}"></option>
+								</datalist>
+							</div>
+						</fieldset>
+					</div>
+
+					<div class="form-group" th:if="${mode=='add'} and ${group}">
+						<fieldset>
+							<label class="control-label col-sm-2">Group Mapping:</label>
+							<div class="col-sm-10">
+								<span class="form-control"> <a
+									th:href="@{'/groups/view/' + ${group.id}}"
+									th:text="${group.name}"></a>
+								</span>
+							</div>
+						</fieldset>
+					</div>
+
+					<div class="form-group">
+						<fieldset th:disabled="${mode =='view'}">
+							<label class="control-label col-sm-2" for="content">Post
+								Content:</label>
+							<div class="col-sm-10">
+								<span th:if="${mode =='view'}" class="form-control"
+									th:text="${post.content}"></span> <input
+									th:if="${!(mode =='view')}" required="required" maxlength="255"
+									placeholder="post-content" class="form-control" id="content"
+									name="content" type="text"
+									th:value="${mode=='add'}? '' : ${post.content}"> </input>
+							</div>
+						</fieldset>
+					</div>
+					<div class="form-group">
+						<fieldset th:disabled="${mode == 'view'}">
+							<label class="control-label col-sm-2" for="date">Scheduling:</label>
+							<div class="col-sm-5">
+								<span th:if="${mode == 'view'}" class="form-control"
+									th:text="${#strings.substring(post.date, 0, 10)}"></span> <input
+									th:if="${!(mode == 'view')}" class="form-control"
+									required="required" id="date" name="date"
+									th:value="${mode=='add'}? '' :${#strings.substring(post.date, 0, 10)}" type="date"></input>
+							</div>
+							<div class="col-sm-5">
+								<span th:if="${mode == 'view'}" class="form-control"
+									th:text="${#strings.substring(post.date, 11, post.date.length())}"></span>
+								<input th:if="${!(mode == 'view')}" class="form-control"
+									required="required" id="time" name="time" step="1"
+									th:value="${mode=='add'}? '' :${#strings.substring(post.date, 11, post.date.length())}" type="time"></input>
+							</div>
+						</fieldset>
+					</div>
+					<div class="form-group">
+						<fieldset th:disabled="${mode=='view'}">
+							<label class="control-label col-sm-2" for="img">Image
+								attachment:</label>
+							<div class="col-sm-10">
+								<input th:if="!${mode == 'view'}" class="form-control"
+									name="img" type="text"
+									placeholder="e.g. http://dixit.uni-koeln.de/wp-content/uploads/uni-koeln.jpg"
+									th:value="${mode=='add'}? '' : ${post.img}"></input> <span
+									th:if="${mode == 'view'}" class="form-control"><span
+									th:unless="${post.img}">no image</span><a th:href="${post.img}" target="_blank"
+									th:text="${post.img}"></a></span>
+							</div>
+						</fieldset>
+					</div>
+					<div class="form-group">
+						<label class="control-label col-sm-2">Actions:</label>
+
+						<div th:if="${mode == 'view'}" class="col-sm-10">
+							<a class="btn btn-default" th:href="@{/posts/view}"><span
+								class="glyphicon glyphicon-level-up"></span> all Posts</a> <a
+								class="btn btn-primary" th:href="@{'/posts/edit/' + ${post.id}}"><span
+								class="glyphicon glyphicon-pencil"></span> edit Post</a>
+							<button class="btn btn-danger" onclick="ConfirmDeletePost(event)"
+								type="submit" th:formaction="@{'/posts/delete/' + ${post.id}}">
+								<span class="glyphicon glyphicon-remove"></span>delete
+							</button>
+						</div>
+
+						<div th:if="${mode == 'edit'}" class="col-sm-10">
+							<button class="btn btn-primary" type="submit"
+								th:formaction="@{'/posts/save/' + ${post.id}}">
+								<span class="glyphicon glyphicon-floppy-disk"></span> save
+							</button>
+							<a th:href="@{'/posts/view/' + ${post.id}}"
+								class="btn btn-default"><span
+								class="glyphicon glyphicon-remove"></span> cancel</a>
+						</div>
+
+						<div th:if="${mode=='add'}" class="col-sm-10">
+							<button th:if="${groups}" class="btn btn-primary"
+								th:formaction="@{/posts/save}">
+								<span class="glyphicon glyphicon-floppy-disk"></span> save
+							</button>
+							<button th:if="${group}" class="btn btn-primary"
+								th:formaction="@{/posts/save}" name="group"
+								th:value="${group.id}">
+								<span class="glyphicon glyphicon-floppy-disk"></span> save
+							</button>
+						</div>
+
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<script th:replace="../elements/scripts :: scripts"></script>
+</body>
+</html>

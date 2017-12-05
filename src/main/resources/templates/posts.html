@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head th:replace="../elements/header :: header (posts)"></head>
+<body>
+<nav th:replace="../elements/navbar"/>
+
+ <div class="container">
+ <div class="row">
+<div class="col-sm-12">
+<h1>Posts<small> View and edit your posts</small></h1>
+</div>
+</div>
+<hr></hr>
+<div class="row">
+<div class="col-sm-12">
+<h3 th:if="${#lists.isEmpty(posts)}">You don't have any posts yet!</h3>
+<form th:unless="${#lists.isEmpty(posts)}" method="post" th:action="@{/posts/delete}">
+<div th:if="${!#lists.isEmpty(posts)}" class="panel panel-default">
+<table class ="table table-defalut">
+	<thead>
+	<tr>
+		<th>Content</th>
+		<th>Group</th>
+		<th><span class="glyphicon glyphicon-picture"></span></th>
+		<th><span class="glyphicon glyphicon-send"></span></th>
+		<th class ="text-center">Date</th>
+		<th class="text-right">select all <input id="selectAll" type = "checkbox"></input></th>
+	</tr>
+	</thead>
+	<tr th:each="post : ${posts}">
+		<td><a th:href="@{'/posts/view/' + ${post.id}}" th:text="${post.content}"></a></td>
+		<td> <a th:href="@{'/groups/view/'+${post.group.id}}" th:text="${post.group.name}"></a></td>
+		<td><a th:if="${post.img}" th:href="${post.img}" target="_blank"><span class="glyphicon glyphicon-picture"></span></a></td>
+		<td ><span class="glyphicon" th:classappend="${post.posted}? 'glyphicon-ok' : (${post.scheduled}? 'glyphicon-hourglass' : 'glyphicon-remove')"></span></td>
+		<td th:text="${post.date}"></td>
+		<td class="text-right"><input type="checkbox" name="postId" th:value="${post.id}"></input></td>
+	</tr>
+</table>
+    <div class="panel-footer">
+    <div class ="row">
+    <div class ="col-sm-6">
+      <ul th:if="${pages != null}" class="pagination">
+										<li th:if="${pages &gt; 2}" th:classappend="${page == 1} ? disabled"><a
+											th:href="${page == 1}? '#' :  (@{/posts/view?page=1})"
+											><span
+												class="glyphicon glyphicon-step-backward" aria-hidden="true"></span></a></li>
+										<li th:classappend="${page == 1} ? disabled"><a
+											th:href="${page == 1}? '#' :  (@{/posts/view?page=} + ${page-1})"
+											><span
+												class="glyphicon glyphicon-triangle-left" aria-hidden="true"></span></a></li>
+										<li th:if="${page &gt; 3} and ${pages &gt; 7}"
+											th:classappend="(${page-3} &gt; 1) ? disabled"><a
+											th:href="(${page-3} &gt; 1)? '#' : @{'/posts/view?page=' + ${page-3}}"
+											th:text="(${page-3} &gt; 1)? '...' : ${page-3}"></a></li>
+
+										<li th:if="${page} &gt; ${pages-3} and ${page &gt; 4}"><a
+											th:href="@{'/posts/view?page=' + ${page-5}}"
+											th:text="${pages-5}"></a></li>
+										<li
+											th:if="(${page-4} &gt; 0 ) and (${page + 1} &gt; ${pages})"><a
+											th:href="@{'/posts/view?page=' + ${page-4}}"
+											th:text="${page-4}"></a></li>
+										<li th:if="(${page-3} &gt; 0) and (${page + 2} &gt; ${pages})"><a
+											th:href="@{'/posts/view?page=' + ${page-3}}"
+											th:text="${page-3}"></a></li>
+										<li th:if="${page-2} &gt; 0"><a
+											th:href="@{'/posts/view?page=' + ${page-2}}"
+											th:text="${page-2}"></a></li>
+										<li th:if="${page-1} &gt; 0"><a
+											th:href="@{'/posts/view?page=' + ${page-1}}"
+											th:text="${page-1}"></a></li>
+										<li class="active"><a
+											th:href="@{'/posts/view?page=' + ${page}}" th:text="${page}"></a></li>
+										<li th:if="${page+1} &lt; ${pages+1}"><a
+											th:href="@{'/posts/view?page=' + ${page+1}}"
+											th:text="${page+1}"></a></li>
+										<li th:if="${page+2} &lt; ${pages+1}"><a
+											th:href="@{'/posts/view?page=' + ${page+2}}"
+											th:text="${page+2}"></a></li>
+										<li th:if="${page+3} &lt; ${pages+1} and ${page-2 &lt; 1}"><a
+											th:href="@{'/posts/view?page=' + ${page+3}}"
+											th:text="${page+3}"></a></li>
+										<li th:if="${page+4} &lt; ${pages+1} and ${page-1 &lt; 1}"><a
+											th:href="@{'/posts/view?page=' + ${page+4}}"
+											th:text="${page+4}"></a></li>
+										<li th:if="${page &lt; 4} and ${pages &gt; 7}"><a
+											th:href="@{/posts/view?page=6}">6</a></li>
+										<li th:classappend="(${page+3} &lt; ${pages})? disabled"
+											th:if="${page+2} &lt; ${pages} and ${pages &gt; 7}"><a
+											th:href="(${page+3} &lt; ${pages})? '...' : @{'/posts/view?page=' + ${page+3}}"
+											th:text="(${page+3} &lt; ${pages})? '...' : ${page+3}"></a></li>
+										<li th:classappend="${page == pages} ? disabled"><a
+											th:href="${page == pages}? '#' :  (@{/posts/view?page=} + ${page+1})"
+											><span
+												class="glyphicon glyphicon-triangle-right"
+												aria-hidden="true"></span></a></li>
+										<li th:if="${pages &gt; 2}" th:classappend="${page == pages} ? disabled"><a
+											th:href="${page == pages}? '#' :  (@{/posts/view?page=} + ${pages})"
+											><span
+												class="glyphicon glyphicon-step-forward" aria-hidden="true"></span></a></li>
+									</ul>
+    </div>
+    <div class ="col-sm-6">
+     <div class ="text-right"><button id="deleteSelected" onclick="return ConfirmDeletePosts(event)" class="btn btn-danger" type="submit"><span class="glyphicon glyphicon-trash"></span> delete selected posts</button></div>
+    </div>
+    </div>
+   
+     </div>
+</div>
+</form>
+</div>
+</div>
+</div>
+<script th:replace="../elements/scripts :: scripts"></script>
+</body>
+</html>
