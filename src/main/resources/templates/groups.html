@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head th:replace="../elements/header :: header (title='Groups')"></head>
+<body>
+	<nav th:replace="../elements/navbar" />
+
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-12">
+				<h1>
+					Post Groups<small> View and edit your Post Groups</small>
+				</h1>
+			</div>
+		</div>
+		<hr></hr>
+		<div class="row">
+			<div class="col-sm-12">
+				<h3 th:if="${#lists.isEmpty(groups)}">You don't have any groups
+					yet!</h3>
+				<form th:unless="${#lists.isEmpty(groups)}" method="post"
+					th:action="@{/groups/delete}">
+					<div th:if="${!#lists.isEmpty(groups)}" class="panel panel-default">
+						<table class="table table-default">
+							<thead>
+								<tr>
+									<th>name</th>
+									<th>#</th>
+									<th>description</th>
+									<th class="text-center">status</th>
+									<th class="text-right">select all <input id="selectAll"
+										type="checkbox"></input></th>
+								</tr>
+							</thead>
+							<tr th:each="group :${groups}">
+								<td><a th:href="@{/groups/view/} + ${group.id}"
+									th:text="${group.name}">name</a></td>
+								<td th:text="${group.posts}? ${#lists.size(group.posts)} : '0'">size</td>
+								<td th:text="${group.description}">description</td>
+								<td class="text-center" th:if="${!group.enabled}"><a
+									class="label label-warning"
+									th:href="@{/groups/toggleStatus/}+${group.id}">disabled</a></td>
+								<td class="text-center" th:if="${group.enabled}"><a
+									class="label label-success"
+									th:href="@{/groups/toggleStatus/}+${group.id}"> enabled</a></td>
+								<td class="text-right"><input type="checkbox"
+									name="groupId" th:value="${group.id}"></input></td>
+							</tr>
+						</table>
+						<div class="panel-footer">
+							<div class="row">
+								<div class="col-sm-6">
+									<ul th:if="${pages != null}" class="pagination">
+										<li th:if="${pages &gt; 2}"
+											th:classappend="${page == 1} ? disabled"><a
+											th:href="${page == 1}? '#' :  (@{/groups/view?page=1})"><span
+												class="glyphicon glyphicon-step-backward" aria-hidden="true"></span></a></li>
+										<li th:classappend="${page == 1} ? disabled"><a
+											th:href="${page == 1}? '#' :  (@{/groups/view?page=} + ${page-1})"><span
+												class="glyphicon glyphicon-triangle-left" aria-hidden="true"></span></a></li>
+										<li th:if="${page &gt; 3} and ${pages &gt; 7}"
+											th:classappend="(${page-3} &gt; 1) ? disabled"><a
+											th:href="(${page-3} &gt; 1)? '#' : @{'/groups/view?page=' + ${page-3}}"
+											th:text="(${page-3} &gt; 1)? '...' : ${page-3}"></a></li>
+										<li th:if="${page} &gt; ${pages-3} and ${page &gt; 4}"><a
+											th:href="@{'/groups/view?page=' + ${page-5}}"
+											th:text="${pages-5}"></a></li>
+										<li
+											th:if="(${page-4} &gt; 0 ) and (${page + 1} &gt; ${pages})"><a
+											th:href="@{'/groups/view?page=' + ${page-4}}"
+											th:text="${page-4}"></a></li>
+										<li th:if="(${page-3} &gt; 0) and (${page + 2} &gt; ${pages})"><a
+											th:href="@{'/groups/view?page=' + ${page-3}}"
+											th:text="${page-3}"></a></li>
+										<li th:if="${page-2} &gt; 0"><a
+											th:href="@{'/groups/view?page=' + ${page-2}}"
+											th:text="${page-2}"></a></li>
+										<li th:if="${page-1} &gt; 0"><a
+											th:href="@{'/groups/view?page=' + ${page-1}}"
+											th:text="${page-1}"></a></li>
+										<li class="active"><a
+											th:href="@{'/groups/view?page=' + ${page}}" th:text="${page}"></a></li>
+										<li th:if="${page+1} &lt; ${pages+1}"><a
+											th:href="@{'/groups/view?page=' + ${page+1}}"
+											th:text="${page+1}"></a></li>
+										<li th:if="${page+2} &lt; ${pages+1}"><a
+											th:href="@{'/groups/view?page=' + ${page+2}}"
+											th:text="${page+2}"></a></li>
+										<li th:if="${page+3} &lt; ${pages+1} and ${page-2 &lt; 1}"><a
+											th:href="@{'/groups/view?page=' + ${page+3}}"
+											th:text="${page+3}"></a></li>
+										<li th:if="${page+4} &lt; ${pages+1} and ${page-1 &lt; 1}"><a
+											th:href="@{'/groups/view?page=' + ${page+4}}"
+											th:text="${page+4}"></a></li>
+										<li th:if="${page &lt; 4} and ${pages &gt; 7}"><a
+											th:href="@{/groups/view?page=6}">6</a></li>
+										<li th:classappend="(${page+3} &lt; ${pages})? disabled"
+											th:if="${page+2} &lt; ${pages} and ${pages &gt; 7}"><a
+											th:href="(${page+3} &lt; ${pages})? '...' : @{'/groups/view?page=' + ${page+3}}"
+											th:text="(${page+3} &lt; ${pages})? '...' : ${page+3}"></a></li>
+										<li th:classappend="${page == pages} ? disabled"><a
+											th:href="${page == pages}? '#' :  (@{/groups/view?page=} + ${page+1})"><span
+												class="glyphicon glyphicon-triangle-right"
+												aria-hidden="true"></span></a></li>
+										<li th:if="${pages} &gt; 2"
+											th:classappend="${page == pages} ? disabled"><a
+											th:href="${page == pages}? '#' :  (@{/groups/view?page=} + ${pages})"><span
+												class="glyphicon glyphicon-step-forward" aria-hidden="true"></span></a></li>
+									</ul>
+								</div>
+								<div class="col-sm-6">
+									<div class="text-right">
+										<button id="deleteselected"
+											onclick="return ConfirmDeleteGroups(event)"
+											class="btn btn-danger" type="submit">
+											<span class="glyphicon glyphicon-trash"></span> delete
+											selected groups
+										</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</body>
+<script th:replace="../elements/scripts :: scripts"></script>
+</html>
+
+
+
+
+

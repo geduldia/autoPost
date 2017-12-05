@@ -1,0 +1,9 @@
+body { 
+	padding-top: 50px; 
+	height: 100%;
+}
+
+#deleteselected {
+	margin: 20px;
+}
+
