@@ -1,13 +1,12 @@
-# DATA SOURCE
-spring.datasource.url = 
-spring.datasource.initialize = 
+spring.datasource.url =
+spring.datasource.initialize =
 spring.datasource.username = 
 spring.datasource.password = 
 spring.datasource.testWhileIdle = 
 spring.datasource.validationQuery = 
 
 # JPA / HIBERNATE
-spring.jpa.show-sql = 
+spring.jpa.show-sql =
 spring.jpa.hibernate.ddl-auto =
 spring.jpa.hibernate.naming-strategy = 
 spring.jpa.properties.hibernate.dialect = 
