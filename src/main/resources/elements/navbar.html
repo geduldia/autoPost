@@ -10,27 +10,38 @@
       <li><a th:href="@{/help}">Help</a></li>
       <li><a th:href="@{/stats}">Stats</a></li>
     </ul>
-   <form th:if="${session.account} == null" method="post" class="navbar-form navbar-right" th:action="@{/connect/facebook}">
-   	<button class="btn btn-primary" type="submit">Login with facebook</button>
-   </form>
-   <!-- TODO: th:unless  -->
-   <ul class="nav navbar-nav navbar-right" th:unless="!${session.account == null}">
-		<li class="dropdown">
-        <a class="dropdown-toggle" data-toggle="dropdown" href="#">Posts</a>
-        <ul class="dropdown-menu">
-          <li><a th:href="@{/posts/view}">view</a></li>
-          <li><a th:href="@{/posts/add}">add</a></li>
-        </ul>
-      </li>
-		<li class="dropdown">
-        <a class="dropdown-toggle" data-toggle="dropdown" href="#">Groups</a>
-        <ul class="dropdown-menu">
-          <li><a th:href="@{/groups/view}">view</a></li>
-          <li><a th:href="@{/groups/add}">add</a></li>
-        </ul>
-      </li>
-
-		<li><a th:href="@{/account}"><span class="glyphicon glyphicon-user"></span></a></li>
-   </ul>
+    
+    
+   <!--  <form th:unless="${session.account != null}" th:action="@{/connect/facebook}" method="post" class="navbar-form navbar-right">
+        <button class="btn btn-primary" type="submit">Login with facebook</button>
+      </form> -->
+      <ul th:unless="${session.account != null}" class="nav navbar-nav navbar-right">
+        <li th:classappend="${#httpServletRequest.requestURI.startsWith(#httpServletRequest.getContextPath() + '/posts')} ? 'active'" class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Posts <span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li><a th:href="@{/posts/view}">View posts</a></li>
+            <li><a th:href="@{/posts/add}">Add new post</a></li>
+          </ul>
+        </li>
+        <li th:classappend="${#httpServletRequest.requestURI.startsWith(#httpServletRequest.getContextPath() + '/groups')} ? 'active'" class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Groups <span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li><a th:href="@{/groups/view}">View groups</a></li>
+            <li><a th:href="@{/groups/add}">Add new group</a></li>
+            <li class="divider"></li>
+            <li><a th:href="@{/groups/import/tsvFile}">import from tsv-file</a></li>
+          </ul>
+        </li>
+       <!--  <li th:classappend="${#httpServletRequest.requestURI.equals(#httpServletRequest.getContextPath() + '/account')} ? 'active'">
+          <a th:href="@{/account}" class="image"><img th:src="${session.account.image}"></img>
+          </a>
+        </li> -->
+      </ul>
+    
+   
+   
+   
+   
+   
   </div>
 </nav>

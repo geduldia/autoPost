@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head th:replace="../elements/header :: header (group-details)"></head>
+<body>
+	<nav th:replace="../elements/navbar" />
+
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-12">
+				<h1>
+					Copy Group<small> Copy your group to a specified reference
+						date</small>
+				</h1>
+			</div>
+		</div>
+		<hr></hr>
+		<div class="row">
+			<form class="form-horizontal" method="post" th:action="@{'/groups/copy/date/' + ${group.id}}">
+				<div class="form-group">
+					<label class="control-label col-sm-2" for="name">Name:</label>
+					<div class="col-sm-10">
+						<input class="form-control" type="text" name="name" id="name"
+							required="required"
+							maxlength="255"
+							th:value="${group.name}"> </input>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label col-sm-2" for="description">Description:</label>
+					<div class="col-sm-10">
+						<input class="form-control" type="text" name="description"
+							id="description" maxlength="255"
+							th:value="${group.description}"></input>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<fieldset>
+						<label class="control-label col-sm-2" for="date">new
+							scheduling:</label>
+						<div class="col-sm-5">
+							<input class="form-control" required="required" id="date"
+								name="date" type="date"></input>
+						</div>
+						<div class="col-sm-5">
+							<input class="form-control" required="required" id="time"
+								name="time" step="1" type="time"></input>
+						</div>
+					</fieldset>
+				</div>
+
+				<div class="form-group">
+					<label class="control-label col-sm-2">scheduling base:</label>
+					<div class="col-sm-10">
+						<div class="panel panel-default">
+							<table class="table table-striped">
+								<thead>
+									<tr>
+										<th>select</th>
+										<th>content</th>
+										<th><span class="glyphicon glyphicon-picture"></span></th>
+										<th class="text-right">date</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr th:each="post : ${posts}">
+										<td>
+											<div class="radio">
+												<label> <input type="radio" name="referencePostId"
+													id="${post.id}" th:value="${post.id}" required="required"></input>
+													<span class="glyphicon glyphicon-time"></span>
+												</label>
+											</div>
+										</td>
+										<td th:text="${post.content}"></td>
+										<td><a th:href="${post.img}"><span th:if="${post.img}"
+											class="glyphicon glyphicon-picture"></span></a></td>
+										<td class="text-right" th:text="${post.date}"></td>
+									</tr>
+								</tbody>
+							</table>
+							<div class="panel-footer" th:if="${pages}">
+							<div class="row">
+								<div class="col-sm-6">
+									<ul th:if="${pages != null}" class="pagination">
+										<li th:if="${pages &gt; 2}"
+											th:classappend="${page == 1} ? disabled"><a
+											th:href="${page == 1}? '#' :  (@{'/groups/copy/date/' +${group.id}+ '?page=1'})"><span
+												class="glyphicon glyphicon-step-backward" aria-hidden="true"></span></a></li>
+										<li th:classappend="${page == 1} ? disabled"><a
+											th:href="${page == 1}? '#' :  (@{'/groups/copy/date/' +${group.id}+ '?page=' + ${page-1}})"><span
+												class="glyphicon glyphicon-triangle-left" aria-hidden="true"></span></a></li>
+										<li th:if="${page &gt; 3} and ${pages &gt; 7}"
+											th:classappend="(${page-3} &gt; 1) ? disabled"><a
+											th:href="(${page-3} &gt; 1)? '#' : @{'/groups/copy/date/' +${group.id}+ '?page=' + ${page-3}}"
+											th:text="(${page-3} &gt; 1)? '...' : ${page-3}"></a></li>
+
+										<li th:if="${page} &gt; ${pages-3} and ${page &gt; 4}"><a
+											th:href="@{'/groups/copy/date/' +${group.id}+ '?page=' + ${page-5}}"
+											th:text="${pages-5}"></a></li>
+										<li
+											th:if="(${page-4} &gt; 0 ) and (${page + 1} &gt; ${pages})"><a
+											th:href="@{'/groups/copy/date/' +${group.id}+ '?page=' + ${page-4}}"
+											th:text="${page-4}"></a></li>
+										<li th:if="(${page-3} &gt; 0) and (${page + 2} &gt; ${pages})"><a
+											th:href="@{'/groups/copy/date/' +${group.id}+ '?page=' + ${page-3}}"
+											th:text="${page-3}"></a></li>
+										<li th:if="${page-2} &gt; 0"><a
+											th:href="@{'/groups/copy/date/' +${group.id}+ '?page=' + ${page-2}}"
+											th:text="${page-2}"></a></li>
+										<li th:if="${page-1} &gt; 0"><a
+											th:href="@{'/groups/copy/date/' +${group.id}+ '?page=' + ${page-1}}"
+											th:text="${page-1}"></a></li>
+										<li class="active"><a
+											th:href="@{'/groups/copy/date/' +${group.id}+ '?page=' + ${page}}"
+											th:text="${page}"></a></li>
+										<li th:if="${page+1} &lt; ${pages+1}"><a
+											th:href="@{'/groups/copy/date/' +${group.id}+ '?page=' + ${page+1}}"
+											th:text="${page+1}"></a></li>
+										<li th:if="${page+2} &lt; ${pages+1}"><a
+											th:href="@{'/groups/copy/date/' +${group.id}+ '?page=' +  ${page+2}}"
+											th:text="${page+2}"></a></li>
+										<li th:if="${page+3} &lt; ${pages+1} and ${page-2 &lt; 1}"><a
+											th:href="@{'/groups/copy/date/' +${group.id}+ '?page=' + ${page+3}}"
+											th:text="${page+3}"></a></li>
+										<li th:if="${page+4} &lt; ${pages+1} and ${page-1 &lt; 1}"><a
+											th:href="@{'/groups/copy/date/' +${group.id}+ '?page=' + ${page+4}}"
+											th:text="${page+4}"></a></li>
+										<li th:if="${page &lt; 4} and ${pages &gt; 7}"><a
+											th:href="@{'/groups/copy/date/' +${group.id}+ '?page=6'">6</a></li>
+										<li th:classappend="(${page+3} &lt; ${pages})? disabled"
+											th:if="${page+2} &lt; ${pages} and ${pages &gt; 7}"><a
+											th:href="(${page+3} &lt; ${pages})? '...' : @{'/groups/copy/date/' +${group.id}+ '?page=' +  ${page+3}}"
+											th:text="(${page+3} &lt; ${pages})? '...' : ${page+3}"></a></li>
+										<li th:classappend="${page == pages} ? disabled"><a
+											th:href="${page == pages}? '#' :  (@{'/groups/copy/date/' +${group.id}+ '?page=' + ${page+1}})"><span
+												class="glyphicon glyphicon-triangle-right"
+												aria-hidden="true"></span></a></li>
+										<li th:if="${pages &gt; 2}"
+											th:classappend="${page == pages} ? disabled"><a
+											th:href="${page == pages}? '#' :  (@{'/groups/copy/date/' +${group.id}+ '?page=' + ${pages}})"><span
+												class="glyphicon glyphicon-step-forward" aria-hidden="true"></span></a></li>
+									</ul>
+								</div>
+							</div>
+						</div>
+						</div>
+					</div>
+				</div>
+				<div class="form-group">
+				<div class="label col-sm-2">Action:</div>
+				<div class="col-sm-10">
+				<button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-floppy-disk"></span> Copy group to new reference date</button>
+				</div>
+				</div>
+			</form>
+
+		</div>
+	</div>
+	<script th:replace="../elements/scripts :: scripts"></script>
+</body>
+</html>
+

@@ -1,6 +1,7 @@
 package autoPost.entities;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -27,7 +28,7 @@ public class PostGroup {
 	private User user;
 	
 	/*TODO: CascadeType = ALL --> Rückgabe der PostID in savePost()*/
-	@OneToMany(mappedBy="group", cascade = CascadeType.REMOVE)
+	@OneToMany(mappedBy="group", cascade = CascadeType.ALL)
 	private List<Post> posts;
 	
 	@Column(columnDefinition="boolean default 0")
@@ -39,6 +40,11 @@ public class PostGroup {
 	
 	public PostGroup(){
 		
+	}
+	
+	public PostGroup(String name, String description){
+		this.name = name;
+		this.description = description;
 	}
 	
 	public PostGroup(String name, String description, User user){
@@ -56,11 +62,13 @@ public class PostGroup {
 	}
 
 	public List<Post> getPosts() {
+		Collections.sort(posts);
 		return posts;
 	}
 
 	public void setPosts(List<Post> posts) {
 		this.posts = posts;
+		Collections.sort(this.posts);
 	}
 
 	public boolean isEnabled() {
@@ -92,6 +100,7 @@ public class PostGroup {
 			posts = new ArrayList<Post>();
 		}
 		this.posts.add(post);
+		Collections.sort(this.posts);
 	}
 
 }

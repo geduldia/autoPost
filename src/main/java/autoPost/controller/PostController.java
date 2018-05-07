@@ -1,6 +1,9 @@
 package autoPost.controller;
 
 import java.net.URL;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -56,8 +59,24 @@ public class PostController {
 		int userId = 1;// Integer.parseInt(((Map<String,String>)
 						// session.getAttribute("account")).get("userId"));
 
-		ModelAndView mv = new ModelAndView("posts");
 		List<Post> posts = postService.getPostsByUser(userId);
+		//reorder postsList: upcoming posts first - past posts second
+		LocalDateTime now = LocalDateTime.now();
+		List<Post> old = new ArrayList<Post>();
+		List<Post> upcoming = new ArrayList<Post>();
+		for (Post post : posts) {
+			DateTimeFormatter dtFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+			LocalDateTime date = LocalDateTime.parse(post.getDate(), dtFormatter);
+			if(date.isBefore(now)){
+				old.add(post);
+			}
+			else{
+				upcoming.add(post);
+			}	
+		}
+		posts.removeAll(old);
+		posts.addAll(old);
+		ModelAndView mv = new ModelAndView("posts");
 		if (posts.size() <= postsPerPage) {
 			mv.addObject("posts", posts);
 			return mv;

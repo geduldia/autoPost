@@ -29,7 +29,6 @@ public class GroupService {
 	}
 
 	public void deleteGroup(int groupId, int userId) {
-		System.out.println("##################################################### delete Group");
 		repo.delete(getGroup(groupId, userId));
 	}
 

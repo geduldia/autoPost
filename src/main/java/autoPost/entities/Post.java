@@ -7,8 +7,10 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+
 @Entity(name="posts")
-public class Post {
+public class Post implements Comparable<Post>
+{
 	
 	@Id
 	@GeneratedValue
@@ -39,6 +41,12 @@ public class Post {
 	
 	public Post(){
 		
+	}
+	
+	public Post (String content, PostGroup group){
+		this.content = content;
+		this.group = group;
+		this.user = group.getUser();
 	}
 	
 	public Post(String content, String date, PostGroup group){
@@ -99,9 +107,10 @@ public class Post {
 	public void setImg(String img) {
 		this.img = img;
 	}
-	
 
-	
+	public int compareTo(Post post) {
+		return this.date.compareTo(post.date);
+	}
 	
 
 }

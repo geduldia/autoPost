@@ -9,7 +9,7 @@ import autoPost.entities.User;
 
 public interface PostRepository extends CrudRepository<Post, Integer> {
 
-	List<Post> findByUserId(int userID);
+
 	
 	List<Post> findByGroupIdAndUserId(int groupID, int userId);
 	
@@ -18,4 +18,6 @@ public interface PostRepository extends CrudRepository<Post, Integer> {
 	void deleteAllByUserIdAndGroupId(int userId, int groupId);
 
 	Post findByIdAndUserId(int postId, int userId);
+
+	List<Post> findByUserIdOrderByDateAsc(int userID);
 }

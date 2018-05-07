@@ -1,15 +1,19 @@
 package autoPost.controller;
 
+import java.io.File;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-import javax.inject.Inject;
-import javax.security.auth.message.callback.PrivateKeyCallback.Request;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -26,6 +30,10 @@ import autoPost.service.UserService;
 @Controller
 @RequestMapping(value = "/groups")
 public class GroupController {
+
+	@Value("${autoPost.parser.dateformats}")
+	private String dateFormats;
+
 	@Autowired
 	private HttpSession session;
 
@@ -33,12 +41,12 @@ public class GroupController {
 	private GroupService groupService;
 
 	@Autowired
-	private PostService postService;
-
-	@Autowired
 	private UserService userService;
 
-	private int groupsPerPage = 1;
+	@Autowired
+	private PostService postService;
+
+	private int groupsPerPage = 15;
 	private int postsPerPage = 15;
 
 	/**
@@ -172,19 +180,34 @@ public class GroupController {
 			mv.addObject("error", "A Group with the ID # " + groupId + " does not exist!");
 			return mv;
 		}
+		List<Post> posts = group.getPosts();
+		// reorder postsList: upcoming posts first - past posts second
+		LocalDateTime now = LocalDateTime.now();
+		List<Post> old = new ArrayList<Post>();
+		List<Post> upcoming = new ArrayList<Post>();
+		for (Post post : posts) {
+			DateTimeFormatter dtFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+			LocalDateTime date = LocalDateTime.parse(post.getDate(), dtFormatter);
+			if (date.isBefore(now)) {
+				old.add(post);
+			} else {
+				upcoming.add(post);
+			}
+		}
+		posts.removeAll(old);
+		posts.addAll(old);
 		ModelAndView mv = new ModelAndView("group");
-		if (group.getPosts().size() <= postsPerPage) {
+		if (posts.size() <= postsPerPage) {
 			mv.addObject("group", group);
-			mv.addObject("posts", group.getPosts());
+			mv.addObject("posts", posts);
 			mv.addObject("mode", "view");
 			return mv;
 		}
-		int pages = (int) StrictMath.ceil((double) group.getPosts().size() / postsPerPage);
+		int pages = (int) StrictMath.ceil((double) posts.size() / postsPerPage);
 		int offset = postsPerPage * (page - 1);
-		int endset = (offset + postsPerPage > group.getPosts().size() ? (group.getPosts().size())
-				: (offset + postsPerPage));
+		int endset = (offset + postsPerPage > posts.size() ? (posts.size()) : (offset + postsPerPage));
 		mv.addObject("group", group);
-		mv.addObject("posts", group.getPosts().subList(offset, endset));
+		mv.addObject("posts", posts.subList(offset, endset));
 		mv.addObject("pages", pages);
 		mv.addObject("page", page);
 		mv.addObject("mode", "view");
@@ -227,13 +250,12 @@ public class GroupController {
 		User user = userService.getUser(userId);
 		if (description.equals("")) {
 			description = null;
-		}
-		else if(description.length() > 255){
+		} else if (description.length() > 255) {
 			ModelAndView mv = new ModelAndView("error");
 			mv.addObject("error", "The group description may be no longer then 255 characters.");
 			return mv;
 		}
-		if(name.length() > 255){
+		if (name.length() > 255) {
 			ModelAndView mv = new ModelAndView("error");
 			mv.addObject("error", "The group name may be no longer then 255 characters.");
 			return mv;
@@ -268,10 +290,12 @@ public class GroupController {
 	}
 
 	/**
-	 * A HTTP POST request responsible for serving /groups/edit/{groupId}.
-	 * This method gets POSTed as the group-editing form is submitted. All input- field values are passed as parameters and
-	 * checked for validity. Upon success the referenced group gets updated in
-	 * the database or an error is shown.
+	 * A HTTP POST request responsible for serving /groups/edit/{groupId}. This
+	 * method gets POSTed as the group-editing form is submitted. All input-
+	 * field values are passed as parameters and checked for validity. Upon
+	 * success the referenced group gets updated in the database or an error is
+	 * shown.
+	 * 
 	 * @param groupId
 	 * @param name
 	 * @param description
@@ -294,12 +318,12 @@ public class GroupController {
 		if (description.equals("")) {
 			description = null;
 		}
-		if(description.length() > 255){
+		if (description.length() > 255) {
 			ModelAndView mv = new ModelAndView("error");
 			mv.addObject("error", "The group description may be no longer then 255 characters.");
 			return mv;
 		}
-		if(name.length() > 255){
+		if (name.length() > 255) {
 			ModelAndView mv = new ModelAndView("error");
 			mv.addObject("error", "The group name may be no longer then 255 characters.");
 			return mv;
@@ -310,6 +334,122 @@ public class GroupController {
 		ModelAndView mv = new ModelAndView("redirect:/groups/view/" + groupId);
 		mv.addObject("mode", "view");
 		return mv;
+	}
+
+	@RequestMapping(value = "/copy/year/{groupId}")
+	public ModelAndView copyToNextYear(@PathVariable int groupId) {
+		// if (session.getAttribute("account") == null)
+		// return new ModelAndView("redirect:/account");
+		int userId = 1;// Integer.parseInt(((Map<String, String>)
+						// session.getAttribute("account")).get("userId"));
+		User user = userService.getUser(userId);
+		PostGroup group = groupService.getGroup(groupId, userId);
+		PostGroup updatedGroup = new PostGroup(group.getName(), group.getDescription(), user);
+		List<Post> updatedPosts = new ArrayList<Post>();
+		Post updatedPost;
+		String timeString = null;
+		for (Post post : group.getPosts()) {
+			LocalDateTime time = LocalDateTime.parse(post.getDate(),
+					DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+			time = time.plusYears(1);
+			timeString = time.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+			updatedPost = new Post(post.getContent(), timeString, updatedGroup);
+			updatedPost.setImg(post.getImg());
+			updatedPosts.add(updatedPost);
+		}
+		String newYear = timeString.substring(0, 4);
+		updatedGroup.setPosts(updatedPosts);
+		updatedGroup.setName(group.getName() + "_" + newYear);
+		groupService.saveGroup(updatedGroup);
+		ModelAndView mv = new ModelAndView("redirect:/groups/view");
+		return mv;
+	}
+
+	@RequestMapping(value = "/copy/date/{groupId}")
+	public ModelAndView copyToReferenceDate(@PathVariable int groupId,
+			@RequestParam(name = "page", defaultValue = "1") int page) {
+		// if (session.getAttribute("account") == null)
+		// return new ModelAndView("redirect:/account");
+		int userId = 1;// Integer.parseInt(((Map<String, String>)
+						// session.getAttribute("account")).get("userId"));
+		ModelAndView mv = new ModelAndView("copy");
+		PostGroup group = groupService.getGroup(groupId, userId);
+		if (group.getPosts().size() <= postsPerPage) {
+			mv.addObject("group", group);
+			mv.addObject("posts", group.getPosts());
+			return mv;
+		}
+		int pages = (int) StrictMath.ceil((double) group.getPosts().size() / postsPerPage);
+		int offset = postsPerPage * (page - 1);
+		int endset = (offset + postsPerPage > group.getPosts().size() ? (group.getPosts().size())
+				: (offset + postsPerPage));
+		mv.addObject("group", group);
+		mv.addObject("posts", group.getPosts().subList(offset, endset));
+		mv.addObject("pages", pages);
+		mv.addObject("page", page);
+		return mv;
+	}
+
+	@RequestMapping(value = "/copy/date/{groupId}", method = RequestMethod.POST)
+	public ModelAndView copyToReferenceDatePost(@PathVariable int groupId, @RequestParam("name") String name,
+			@RequestParam("description") String description, @RequestParam("date") String date,
+			@RequestParam("time") String time, @RequestParam("referencePostId") int referencePostId) {
+		// if (session.getAttribute("account") == null)
+		// return new ModelAndView("redirect:/account");
+		int userId = 1;// Integer.parseInt(((Map<String, String>)
+						// session.getAttribute("account")).get("userId"));
+		User user = userService.getUser(userId);
+		PostGroup group = groupService.getGroup(groupId, userId);
+		PostGroup copyGroup = new PostGroup(name, description, user);
+		Post referencePost = postService.getPost(referencePostId, userId);
+		LocalDateTime refPostTime = LocalDateTime.parse(referencePost.getDate(),
+				DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+		if (time.matches("^[0-9]{2}:[0-9]{2}$")) {
+			time = time + ":00";
+		}
+		LocalDateTime updatedTime = LocalDateTime.parse(date + " " + time,
+				DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+		long seconds = ChronoUnit.SECONDS.between(refPostTime, updatedTime);
+		List<Post> copyPosts = new ArrayList<Post>();
+		for (Post post : group.getPosts()) {
+			Post copyPost = new Post(post.getContent(), post.getDate(), copyGroup);
+			LocalDateTime then = LocalDateTime.parse(post.getDate(),
+					DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+			then = then.plusSeconds(seconds);
+			copyPost.setDate(then.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+			copyPosts.add(copyPost);
+			copyGroup.setPosts(copyPosts);
+		}
+		groupService.saveGroup(copyGroup);
+		ModelAndView mv = new ModelAndView("redirect:/groups/view/" + copyGroup.getId());
+		return mv;
+	}
+
+	@RequestMapping(value = "/import/{importer}")
+	public ModelAndView importGroup(@PathVariable String importer) {
+		// if (session.getAttribute("account") == null)
+		// return new ModelAndView("redirect:/account");
+
+		if (!Arrays.asList("tsvFile", "googleDocs").contains(importer)) {
+			ModelAndView mv = new ModelAndView("error");
+			mv.addObject("error", "An importer of type " + importer + " does not exist.");
+			return mv;
+		}
+		ModelAndView mv = new ModelAndView("import");
+		mv.addObject("importer", importer);
+		return mv;
+	}
+
+	@RequestMapping(value = "/import/tsv-file", method = RequestMethod.POST)
+	public ModelAndView importTsvFile(@RequestParam("source") File file, @RequestParam("name") String name,
+			@RequestParam("description") String description, @RequestParam("delay") int delay,
+			@RequestParam("encoding") String encoding) {
+		// if (session.getAttribute("account") == null)
+		// return new ModelAndView("redirect:/account");
+		int userId = 1;// Integer.parseInt(((Map<String, String>)
+		// session.getAttribute("account")).get("userId"));
+		User user = userService.getUser(userId);
+		return null;
 	}
 
 }

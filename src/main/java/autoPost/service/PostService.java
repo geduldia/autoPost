@@ -15,7 +15,7 @@ public class PostService {
 	private PostRepository repo;
 	
 	public List<Post> getPostsByUser(int userID){
-		return repo.findByUserId(userID);
+		return repo.findByUserIdOrderByDateAsc(userID);
 	}
 	
 	public List<Post> getGroupPosts(int groupId, int userId){

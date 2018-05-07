@@ -14,3 +14,7 @@ spring.jpa.properties.hibernate.dialect =
 # FACEBOOK
 spring.social.facebook.appId = 
 spring.social.facebook.appSecret = 
+
+# PARSET
+
+autpost.parser.dateformats =
