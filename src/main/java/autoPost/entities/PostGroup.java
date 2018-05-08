@@ -53,6 +53,13 @@ public class PostGroup {
 		this.user = user;
 	}
 	
+	public void setUser(User user){
+		this.user = user;
+		for (Post post : posts) {
+			post.setUser(user);
+		}
+	}
+	
 	public String getName() {
 		return name;
 	}

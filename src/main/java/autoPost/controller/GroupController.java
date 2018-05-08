@@ -1,6 +1,7 @@
 package autoPost.controller;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -13,16 +14,20 @@ import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 import autoPost.entities.Post;
 import autoPost.entities.PostGroup;
 import autoPost.entities.User;
+import autoPost.postCreation.MalformedTSVFileException;
+import autoPost.postCreation.PostFactory;
 import autoPost.service.GroupService;
 import autoPost.service.PostService;
 import autoPost.service.UserService;
@@ -440,16 +445,41 @@ public class GroupController {
 		return mv;
 	}
 
-	@RequestMapping(value = "/import/tsv-file", method = RequestMethod.POST)
-	public ModelAndView importTsvFile(@RequestParam("source") File file, @RequestParam("name") String name,
+	@RequestMapping(value = "/import/tsvFile", method = RequestMethod.POST)
+	public ModelAndView importTsvFile(@RequestParam("source") MultipartFile source, @RequestParam("name") String name,
 			@RequestParam("description") String description, @RequestParam("delay") int delay,
-			@RequestParam("encoding") String encoding) {
+			@RequestParam("encoding") String encoding) throws MalformedTSVFileException {
+		System.out.println("import");
 		// if (session.getAttribute("account") == null)
 		// return new ModelAndView("redirect:/account");
 		int userId = 1;// Integer.parseInt(((Map<String, String>)
 		// session.getAttribute("account")).get("userId"));
+		File file;
+		try {
+			file = File.createTempFile("upload-", ".tsv");
+			FileOutputStream fos = new FileOutputStream(file);
+			fos.write(source.getBytes());
+			fos.close();
+		} catch (Exception e) {
+			ModelAndView mv = new ModelAndView("error");
+			mv.addObject("error", "The uploaded file could not be opened.");
+			return mv;
+		}
 		User user = userService.getUser(userId);
-		return null;
+		PostFactory factory = new PostFactory(dateFormats);
+		PostGroup group = null;
+		try{			
+			group = factory.getPostsFromTSVFile(file, name, description, delay, encoding);		
+		}
+		catch (MalformedTSVFileException e) {
+			ModelAndView mv = new ModelAndView("error");
+			mv.addObject("error", "Parsing error, " + e.getMessage());
+			return mv;
+		}	
+		group.setUser(user);
+		groupService.saveGroup(group);
+		ModelAndView mv = new ModelAndView("redirect:/groups/view/"+group.getId());
+		return mv;
 	}
 
 }

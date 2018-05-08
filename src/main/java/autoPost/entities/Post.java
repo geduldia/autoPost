@@ -55,6 +55,10 @@ public class Post implements Comparable<Post>
 		this.group = group;
 		this.user = group.getUser();
 	}
+	
+	public void setUser(User user){
+		this.user = user;
+	}
 
 	public String getContent() {
 		return content;

@@ -113,9 +113,10 @@ public class PostFactory {
 		 *            the calculated tweet-date
 		 * @return a new tweetGroup with a tweet for each row in the file
 		 */
-		public PostGroup getTweetsFromTSVFile(File tsvFile, String title, String description, int delay, String encoding) throws MalformedTSVFileException {
+		public PostGroup getPostsFromTSVFile(File tsvFile, String title, String description, int delay, String encoding) throws MalformedTSVFileException {
 			PostGroup group = new PostGroup(title, description);
 			try {
+				System.out.println(tsvFile.getAbsolutePath());
 				BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(tsvFile), encoding));
 				String line = in.readLine();
 				String content;
@@ -229,24 +230,9 @@ public class PostFactory {
 				e.printStackTrace();
 				return null;
 			}
+	
 			return group;
 		}
-
-		
-		/**
-		 * concatenates a list of sentences with the delimiter '#SENTENCE#'
-		 *
-		 * @param sentences
-		 * @return concatenated sentences
-		 */
-		private String concatenateSentences(List<String> sentences) {
-			StringBuffer sb = new StringBuffer();
-			for (String s : sentences) {
-				sb.append("#SENTENCE#" + s);
-			}
-			return sb.toString();
-		}
-
 		
 		/**
 		 * trims a sentence to a tweet-lenth of max. 140 characters and adds the
