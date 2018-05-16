@@ -18,7 +18,7 @@ public class UserService {
 		return repo.findIdByFbId(fbId);
 	}
 
-
+	
 
 	public int insertUser(String faceBookID, String token, String tokenSecret) {
 		User user = new User(faceBookID, token, tokenSecret);
@@ -30,5 +30,11 @@ public class UserService {
 
 	public User getUser(int userId) {
 		return repo.findOne(userId);
+	}
+
+
+
+	public long getNumberOfUsers() {
+		return repo.count();
 	}
 }
