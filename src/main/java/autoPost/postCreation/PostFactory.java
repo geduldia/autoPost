@@ -122,6 +122,8 @@ public class PostFactory {
 				String content;
 				String date;
 				String time;
+				float longitude = 0;
+				float latitude = 0;
 				int delayInSeconds = -1;
 				LocalDateTime lastLDT = null;
 				boolean useDelay = false;
@@ -192,6 +194,27 @@ public class PostFactory {
 						}
 					}
 					
+					if(split.length > 4){
+						try{
+							String number = split[4];
+							number = number.replace(",", ".");
+							latitude = Float.parseFloat(number);
+						}
+						catch(NumberFormatException e){
+							throw new MalformedTSVFileException(row, 5, split[4] , "malformed latitude: "+split[4]+" row: "+row+" column: "+ 5);
+						}
+					}
+					if(split.length > 5){
+						try{
+							String number = split[5];
+							number = number.replace(",", ".");
+							longitude = Float.parseFloat(number);
+						}
+						catch(NumberFormatException e){
+							throw new MalformedTSVFileException(row, 6, split[5] , "malformed longitude: "+split[5]+" row: "+row+" column: "+ 6);
+						}
+					}
+					
 					// get tweet-content
 					content = split[2];
 					//escape java
@@ -218,6 +241,8 @@ public class PostFactory {
 					}
 					if (ldt.isAfter(LocalDateTime.now())) {
 						post = new ImportedPost(formattedDate, content, imageUrl, group);
+						post.setLatitude(latitude);
+						post.setLongitude(longitude);
 						((ImportedPost) post).setTrimmed(content.length() > 140);
 						group.addPost(post);
 					}

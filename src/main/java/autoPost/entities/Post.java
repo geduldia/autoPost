@@ -37,8 +37,28 @@ public class Post implements Comparable<Post>
 	private boolean posted;
 	
 	private String img;
+	
+	private float longitude;
+	
+	private float latitude;
 
 	
+	public float getLongitude() {
+		return longitude;
+	}
+
+	public void setLongitude(float longitude) {
+		this.longitude = longitude;
+	}
+
+	public float getLatitude() {
+		return latitude;
+	}
+
+	public void setLatitude(float latitude) {
+		this.latitude = latitude;
+	}
+
 	public Post(){
 		
 	}

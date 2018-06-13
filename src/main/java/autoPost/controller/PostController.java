@@ -33,14 +33,15 @@ public class PostController {
 
 	@Inject
 	private HttpSession session;
-	
+
 	@Autowired
 	private PostService postService;
-	
+
 	@Autowired
 	private GroupService groupService;
-	
-	@Autowired UserService userService;
+
+	@Autowired
+	UserService userService;
 
 	private int postsPerPage = 12;
 
@@ -60,19 +61,18 @@ public class PostController {
 						// session.getAttribute("account")).get("userId"));
 
 		List<Post> posts = postService.getPostsByUser(userId);
-		//reorder postsList: upcoming posts first - past posts second
+		// reorder postsList: upcoming posts first - past posts second
 		LocalDateTime now = LocalDateTime.now();
 		List<Post> old = new ArrayList<Post>();
 		List<Post> upcoming = new ArrayList<Post>();
 		for (Post post : posts) {
 			DateTimeFormatter dtFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 			LocalDateTime date = LocalDateTime.parse(post.getDate(), dtFormatter);
-			if(date.isBefore(now)){
+			if (date.isBefore(now)) {
 				old.add(post);
-			}
-			else{
+			} else {
 				upcoming.add(post);
-			}	
+			}
 		}
 		posts.removeAll(old);
 		posts.addAll(old);
@@ -111,13 +111,13 @@ public class PostController {
 			postService.deletePost(postId, userId);
 		}
 		String referer = request.getHeader("referer");
-		return new ModelAndView("redirect:"+referer);
+		return new ModelAndView("redirect:" + referer);
 	}
 
-	
 	/**
 	 * A HTTP GET request handler responsible for serving /posts/delete/{postId}
 	 * Deletes the post referred by $postID and redirects to the posts overview
+	 * 
 	 * @param postId
 	 * @return View containing the posts overview
 	 */
@@ -128,31 +128,32 @@ public class PostController {
 
 		int userId = 1;// Integer.parseInt(((Map<String, String>)
 						// session.getAttribute("account")).get("userId"));
-		if(postService.getPost(postId, userId) == null){
+		if (postService.getPost(postId, userId) == null) {
 			ModelAndView mv = new ModelAndView("error");
-			mv.addObject("error","A Post with the ID # " + postId + " does not exist!");
+			mv.addObject("error", "A Post with the ID # " + postId + " does not exist!");
 			return mv;
 		}
 		postService.deletePost(postId, userId);
-		return new ModelAndView ("redirect:/posts/view");
+		return new ModelAndView("redirect:/posts/view");
 	}
 
 	/**
 	 * A HTTP GET request handler responsible for serving /posts/view/{postId}
-	 * This method is called to view a single post in detail. It
-	 * reads all relevant information from the database and displays it as a
-	 * view. If no post with the requested ID is found, an error is displayed.
+	 * This method is called to view a single post in detail. It reads all
+	 * relevant information from the database and displays it as a view. If no
+	 * post with the requested ID is found, an error is displayed.
+	 * 
 	 * @param postId
 	 * @return A view containing the post details
 	 */
 	@RequestMapping(value = "/view/{postId}")
 	public ModelAndView viewPost(@PathVariable int postId) {
 		// if (session.getAttribute("account") == null)
-				// return new ModelAndView("redirect:/account");
+		// return new ModelAndView("redirect:/account");
 		int userId = 1;// Integer.parseInt(((Map<String, String>)
 		// session.getAttribute("account")).get("userId"));
 		Post post = postService.getPost(postId, userId);
-		if(post == null){
+		if (post == null) {
 			ModelAndView mv = new ModelAndView("error");
 			mv.addObject("error", "A Post with the ID # " + postId + " does not exist!");
 			return mv;
@@ -163,7 +164,7 @@ public class PostController {
 		return mv;
 	}
 
-	//edit a given post 
+	// edit a given post
 	@RequestMapping(value = "/edit/{postId}")
 	public ModelAndView editPost(@PathVariable int postId) {
 		// if (session.getAttribute("account") == null)
@@ -171,7 +172,7 @@ public class PostController {
 		int userId = 1;// Integer.parseInt(((Map<String, String>)
 		// session.getAttribute("account")).get("userId"));
 		Post post = postService.getPost(postId, userId);
-		if(post == null){
+		if (post == null) {
 			ModelAndView mv = new ModelAndView("error");
 			mv.addObject("error", "A Post with the ID # " + postId + " does not exist!");
 			return mv;
@@ -182,33 +183,33 @@ public class PostController {
 		return mv;
 	}
 
-	//save an edited post
+	// save an edited post
 	@RequestMapping(value = "/save/{postId}", method = RequestMethod.POST)
-	public ModelAndView savePost(@PathVariable int postId, @RequestParam String content,
-			@RequestParam String date, @RequestParam String time, @RequestParam String img) {
+	public ModelAndView savePost(@PathVariable int postId, @RequestParam String content, @RequestParam String date,
+			@RequestParam String time, @RequestParam String img, @RequestParam(defaultValue = "0.0") float latitude,
+			@RequestParam(defaultValue = "0.0") float longitude) {
 		int userId = 1;// Integer.parseInt(((Map<String, String>)
 		// session.getAttribute("account")).get("userId"));
 		Post post = postService.getPost(postId, userId);
-		if(post == null){
+		if (post == null) {
 			ModelAndView mv = new ModelAndView("error");
 			mv.addObject("error", "A Post with the ID # " + postId + " does not exist!");
 			return mv;
 		}
 		post.setContent(content);
-		if(!date.matches("^[0-9]{4}(-[0-9]{2}){2}$")){
+		if (!date.matches("^[0-9]{4}(-[0-9]{2}){2}$")) {
 			ModelAndView mv = new ModelAndView("error");
 			mv.addObject("error", "The post date must match the pattern: YYYY-MM-DD");
 			return mv;
 		}
-		if(time.matches("^[0-9]{2}:[0-9]{2}$")){
-			time = time+":00";
-		}
-		else if(!time.matches("^[0-9]{2}:[0-9]{2}:[0-9]{2}$")){
+		if (time.matches("^[0-9]{2}:[0-9]{2}$")) {
+			time = time + ":00";
+		} else if (!time.matches("^[0-9]{2}:[0-9]{2}:[0-9]{2}$")) {
 			ModelAndView mv = new ModelAndView("error");
 			mv.addObject("error", "The tweet time must match the pattern: HH:MM:SS");
 			return mv;
 		}
-		post.setDate(date + " "+time);
+		post.setDate(date + " " + time);
 		if (!img.isEmpty()) {
 			try {
 				if (ImageIO.read(new URL(img)) == null) {
@@ -221,19 +222,27 @@ public class PostController {
 				mv.addObject("error", "The image URL must be a valid url.");
 				return mv;
 			}
-		}
-		else{
+		} else {
 			img = null;
 		}
-		post.setImg(img);	
+		post.setImg(img);
+		if (longitude < -180 || longitude > 180) {
+			ModelAndView mv = new ModelAndView("error");
+			mv.addObject("error", "The longitude must be between -180 and 180");
+		}
+		if (latitude < -90 || latitude > 90) {
+			ModelAndView mv = new ModelAndView("error");
+			mv.addObject("error", "The latitude must be between -90 and +90");
+		}
+
 		postService.savePost(post);
 		int groupId = post.getGroup().getId();
 		return new ModelAndView("redirect:/groups/view/" + groupId);
 	}
-	
-	//add to a specific group
-	@RequestMapping(value="/add/{groupId}")
-	public ModelAndView addPostToGroup(@PathVariable int groupId){
+
+	// add to a specific group
+	@RequestMapping(value = "/add/{groupId}")
+	public ModelAndView addPostToGroup(@PathVariable int groupId) {
 		// if (session.getAttribute("account") == null)
 		// return new ModelAndView("redirect:/account");
 		int userId = 1;// Integer.parseInt(((Map<String, String>)
@@ -245,7 +254,7 @@ public class PostController {
 		return mv;
 	}
 
-	//add a new post (to a new group or an existing group)
+	// add a new post (to a new group or an existing group)
 	@RequestMapping(value = "/add")
 	public ModelAndView addPost() {
 		// if (session.getAttribute("account") == null)
@@ -258,10 +267,11 @@ public class PostController {
 		mv.addObject("groups", groups);
 		return mv;
 	}
-	
-	//save a new created Post (for a new created group or an existing group)
-	@RequestMapping(value="/save", method = RequestMethod.POST)
-	public ModelAndView saveNewPost(@RequestParam String group, @RequestParam String content, @RequestParam String date, @RequestParam String time, @RequestParam String img){
+
+	// save a new created Post (for a new created group or an existing group)
+	@RequestMapping(value = "/save", method = RequestMethod.POST)
+	public ModelAndView saveNewPost(@RequestParam String group, @RequestParam String content, @RequestParam String date,
+			@RequestParam String time, @RequestParam String img) {
 		// if (session.getAttribute("account") == null)
 		// return new ModelAndView("redirect:/account");
 		int userId = 1;// Integer.parseInt(((Map<String, String>)
@@ -271,28 +281,27 @@ public class PostController {
 		try {
 			int groupId = Integer.parseInt(group);
 			mappedGroup = groupService.getGroup(groupId, userId);
-			if(mappedGroup == null){
+			if (mappedGroup == null) {
 				ModelAndView mv = new ModelAndView("error");
 				mv.addObject("error", "A Group with the ID # " + groupId + " does not exist!");
 				return mv;
-			}	
+			}
 		} catch (NumberFormatException e) {
 			mappedGroup = new PostGroup(group, null, user);
 		}
-		if(!date.matches("^[0-9]{4}(-[0-9]{2}){2}$")){
+		if (!date.matches("^[0-9]{4}(-[0-9]{2}){2}$")) {
 			ModelAndView mv = new ModelAndView("error");
 			mv.addObject("error", "The post date must match the pattern: YYYY-MM-DD");
 			return mv;
 		}
-		if(time.matches("^[0-9]{2}:[0-9]{2}$")){
-			time = time+":00";
-		}
-		else if(!time.matches("^[0-9]{2}:[0-9]{2}:[0-9]{2}$")){
+		if (time.matches("^[0-9]{2}:[0-9]{2}$")) {
+			time = time + ":00";
+		} else if (!time.matches("^[0-9]{2}:[0-9]{2}:[0-9]{2}$")) {
 			ModelAndView mv = new ModelAndView("error");
 			mv.addObject("error", "The tweet time must match the pattern: HH:MM:SS");
 			return mv;
 		}
-		Post post = new Post(content, date+" "+time, mappedGroup);
+		Post post = new Post(content, date + " " + time, mappedGroup);
 		if (!img.isEmpty()) {
 			try {
 				if (ImageIO.read(new URL(img)) == null) {
@@ -305,15 +314,14 @@ public class PostController {
 				mv.addObject("error", "The image URL must be a valid url.");
 				return mv;
 			}
-		}
-		else{
+		} else {
 			img = null;
 		}
-		post.setImg(img);	
+		post.setImg(img);
 		mappedGroup.addPost(post);
 		groupService.saveGroup(mappedGroup);
 		postService.savePost(post);
-		return new ModelAndView("redirect:/groups/view/"+ mappedGroup.getId());
+		return new ModelAndView("redirect:/groups/view/" + mappedGroup.getId());
 	}
-			
+
 }

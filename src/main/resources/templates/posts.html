@@ -22,6 +22,7 @@
 		<th>Content</th>
 		<th>Group</th>
 		<th><span class="glyphicon glyphicon-picture"></span></th>
+		<th><span class="glyphicon glyphicon-map-marker"></span></th>
 		<th><span class="glyphicon glyphicon-send"></span></th>
 		<th class ="text-center">Date</th>
 		<th class="text-right">select all <input id="selectAll" type = "checkbox"></input></th>
@@ -31,6 +32,7 @@
 		<td><a th:href="@{'/posts/view/' + ${post.id}}" th:text="${post.content}"></a></td>
 		<td> <a th:href="@{'/groups/view/'+${post.group.id}}" th:text="${post.group.name}"></a></td>
 		<td><a th:if="${post.img}" th:href="${post.img}" target="_blank"><span class="glyphicon glyphicon-picture"></span></a></td>
+		<td><a th:unless="${post.longitude == 0.0 and  post.latitude == 0.0}" th:href="'https://www.google.de/maps/@'+${post.latitude}+','+${post.longitude}+',17z'" target="_blank"><span class="glyphicon glyphicon-map-marker"></span></a></td>
 		<td ><span class="glyphicon" th:classappend="${post.posted}? 'glyphicon-ok' : (${post.scheduled}? 'glyphicon-hourglass' : 'glyphicon-remove')"></span></td>
 		<td th:text="${post.date}"></td>
 		<td class="text-right"><input type="checkbox" name="postId" th:value="${post.id}"></input></td>
